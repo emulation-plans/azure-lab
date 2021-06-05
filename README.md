@@ -25,7 +25,7 @@ To get started, clone this repo. `cd` into it, and then run `ruby runner.rb` fol
 - You pick if you want to plan, plan and run, or destroy your terraform environment. (This auto_approves so make sure you pick well.) #TODO: give the user a choice. 
 - The script invokes terraform and will start provisioning your environnment. 
 
-```bash
+```
 What do you want to call your admin user? admin-user
 What do you want the admin password to be? •••••••••••••••••••••
 What name do you want to use for your domain? attackrange.com
