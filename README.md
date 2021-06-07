@@ -9,6 +9,7 @@ The scripts here will deploy the following.
 
 - A Domain Controller
 - A Windows 10 Client Machine
+- A Windows Server 2016 Machine
 - It will also, create a domain and join the client to the domain
 - A Kali Linux machine
 - An Azure Bastion host 
@@ -35,3 +36,18 @@ What Kibana URL do you want to use? https://dd655d45ebbc4ac7993ba79c65be59d3.fle
 What enrollment token do you wish to set for Elastic Agent to authenticate with? ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 What do you want to do next? Plan and Run
 ```
+
+## TODO
+
+There are a few outstanding things that need work. 
+
+- The first is making the environment a little more vulnernable by design. Tools like VulnAd will help here. 
+- Add an extra confirmation before the user starts terraforming their environment. 
+- Add a way of doing a quick delete first off. 
+- Add some default settings. 
+- Logging (The RubyTerraform Library supports this) 
+
+## Thanks 
+Thanks to all the homies contributing to infosec. 
+Thanks to Elastic for the Elastic Stack, it's awesome. 
+
