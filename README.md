@@ -45,6 +45,7 @@ There are a few outstanding things that need work.
 - Add a way of doing a quick delete first off. 
 - Add some default settings. 
 - Logging (The RubyTerraform Library supports this) 
+- Make the Terraform neater, and leverage modules. 
 
 ## Thanks 
 Thanks to all the homies contributing to infosec. 
