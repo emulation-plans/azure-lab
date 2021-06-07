@@ -10,7 +10,10 @@ The scripts here will deploy the following.
 - A Domain Controller
 - A Windows 10 Client Machine
 - A Windows Server 2016 Machine
-- It will also, create a domain and join the client to the domain
+- It will also:
+  - Create a domain 
+  - Join Client Machines to the domain
+  - Install Elastic Agent 
 - A Kali Linux machine
 - An Azure Bastion host 
 
