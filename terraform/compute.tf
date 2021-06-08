@@ -6,197 +6,91 @@ module "bastion" {
   public_ip_address_id = module.bastion-networking.public_ip
 }
 
-resource "azurerm_windows_virtual_machine" "attack-range-ad-1" {
-  name                = "ad-1.${var.active_directory_domain}"
-  computer_name       = "ad-1"
+module "domain-controller-1" {
+  source = "./modules/compute/windows"
+  name = "winad-1"
   resource_group_name = module.resource-group.resource_group_name
-  location            = module.resource-group.location
-  size                = "Standard_F2"
-  admin_username      = var.admin_user
-  admin_password      = var.admin_password
-  network_interface_ids = [
-    module.active-directory-interface-1.network-interface-id
-  ]
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "MicrosoftWindowsServer"
-    offer     = "WindowsServer"
-    sku       = "2016-Datacenter"
-    version   = "latest"
-  }
+  location = module.resource-group.location
+  admin_user = var.admin_user
+  admin_password = var.admin_password
+  network_interface_ids = [module.active-directory-interface-1.network-interface-id]
+  image_offer = "WindowsServer"
+  image_publisher = "MicrosoftWindowsServer"
+  image_sku = "2016-Datacenter"
+  image_version = "latest"
 }
 
-resource "azurerm_virtual_machine_extension" "create-active-directory-forest" {
-  name                 = "create-active-directory-forest"
-  virtual_machine_id   = azurerm_windows_virtual_machine.attack-range-ad-1.id
-  publisher            = "Microsoft.Compute"
-  type                 = "CustomScriptExtension"
-  type_handler_version = "1.9"
-  depends_on = [azurerm_windows_virtual_machine.attack-range-ad-1]
-  settings = <<SETTINGS
-    {
-        "commandToExecute": "powershell -command \"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${base64encode(data.template_file.create-domain.rendered)}')) | Out-File -filepath %PUBLIC%\\create-domain.ps1\" && powershell -ExecutionPolicy Unrestricted -File %PUBLIC%\\create-domain.ps1"
-    }
-SETTINGS
-}
-
-data "template_file" "create-domain" {
-  template = file("create-domain.ps1")
-  vars = {
-    kibana-url  = var.kibana_url
-    token       = var.fleet_token
-    domain-name = var.active_directory_domain
-    netbios-name = var.active_directory_netbios_name
-  }
+module "create-domain" {
+  source = "./modules/extras/create-domain"
+  active_directory_domain = var.active_directory_domain
+  active_directory_netbios_name = var.active_directory_netbios_name
+  fleet_token = var.fleet_token
+  kibana_url = var.kibana_url
+  virtual_machine_id = module.domain-controller-1.id
 }
 
 resource "time_sleep" "wait-4-mins" {
-  depends_on = [azurerm_virtual_machine_extension.create-active-directory-forest]
-  create_duration = "3m"
+  depends_on = [module.create-domain]
+  create_duration = "4m"
 }
 
 ###Clients
 
-resource "azurerm_windows_virtual_machine" "attack-range-win10-1" {
-  name                = "win10-1.${var.active_directory_domain}"
-  computer_name       = "win10-1"
+module "win10-1" {
+  source = "./modules/compute/windows"
+  name = "win10-1"
   resource_group_name = module.resource-group.resource_group_name
-  location            = module.resource-group.location
-  size                = "Standard_F2"
-  admin_username      = var.admin_user
-  admin_password      = var.admin_password
+  location = module.resource-group.location
+  admin_user = var.admin_user
+  admin_password = var.admin_password
   depends_on = [time_sleep.wait-4-mins]
-  network_interface_ids = [
-    module.windows-10-network-interface-1.network-interface-id
-  ]
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "MicrosoftWindowsDesktop"
-    offer     = "Windows-10"
-    sku       = "21h1-pron"
-    version   = "latest"
-  }
+  network_interface_ids = [module.windows-10-network-interface-1.network-interface-id]
 }
 
-resource "azurerm_virtual_machine_extension" "join-domain-1" {
-  name                 = "join-domain-1"
-  virtual_machine_id   = azurerm_windows_virtual_machine.attack-range-win10-1.id
-  publisher            = "Microsoft.Compute"
-  type                 = "JsonADDomainExtension"
-  type_handler_version = "1.3"
-  depends_on = [time_sleep.wait-4-mins]
-  # NOTE: the `OUPath` field is intentionally blank, to put it in the Computers OU
-  settings = <<SETTINGS
-    {
-        "Name": "${var.active_directory_domain}",
-        "OUPath": "",
-        "User": "${var.active_directory_domain}\\${azurerm_windows_virtual_machine.attack-range-ad-1.admin_username}",
-        "Restart": "true",
-        "Options": "3"
-    }
-SETTINGS
-
-  protected_settings = <<SETTINGS
-    {
-        "Password": "${azurerm_windows_virtual_machine.attack-range-ad-1.admin_password}"
-    }
-SETTINGS
+module "join-domain-1" {
+  source = "./modules/extras/join-domain"
+  name = "join-domain-win10"
+  active_directory_domain = var.active_directory_domain
+  machine-id = module.win10-1.id
+  admin_username = var.admin_user
+  admin_password = var.admin_password
+  depends_on = [module.win10-1.id]
 }
 
-resource "azurerm_virtual_machine_extension" "install-elastic-agent-1v1" {
-  name                 = "install-elastic-agent-1v1"
-  virtual_machine_id   = azurerm_windows_virtual_machine.attack-range-win10-1.id
-  publisher            = "Microsoft.Compute"
-  type                 = "CustomScriptExtension"
-  type_handler_version = "1.9"
-  depends_on = [time_sleep.wait-4-mins]
-  settings = <<SETTINGS
-    {
-        "commandToExecute": "powershell -command \"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${base64encode(data.template_file.tf.rendered)}')) | Out-File -filepath %PUBLIC%\\install.ps1\" && powershell -ExecutionPolicy Unrestricted -File %PUBLIC%\\install.ps1"
-    }
-SETTINGS
+module "elastic-agent-1" {
+  source = "./modules/extras/install-agent"
+  name = "install-agent-1"
+  machine_id = module.win10-1.id
+  kibana_url = var.kibana_url
+  fleet_token = var.fleet_token
 }
 
-resource "azurerm_windows_virtual_machine" "attack-range-win2k16-1" {
-  name                = "win2k16-1.${var.active_directory_domain}"
-  computer_name       = "win2k16-1"
+module "win2k16-1" {
+  source = "./modules/compute/windows"
+  name = "win2k16-1"
   resource_group_name = module.resource-group.resource_group_name
-  location            = module.resource-group.location
-  size                = "Standard_F2"
-  admin_username      = var.admin_user
-  admin_password      = var.admin_password
+  location = module.resource-group.location
+  admin_user = var.admin_user
+  admin_password = var.admin_password
   depends_on = [time_sleep.wait-4-mins]
-  network_interface_ids = [
-    module.windows-server-2k16-network-interface-1.network-interface-id,
-  ]
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "MicrosoftWindowsServer"
-    offer     = "WindowsServer"
-    sku       = "2016-Datacenter"
-    version   = "latest"
-  }
+  network_interface_ids = [module.windows-server-2k16-network-interface-1.network-interface-id]
 }
 
-resource "azurerm_virtual_machine_extension" "join-domain-2k16" {
-  name                 = "join-domain-2k16"
-  virtual_machine_id   = azurerm_windows_virtual_machine.attack-range-win2k16-1.id
-  publisher            = "Microsoft.Compute"
-  type                 = "JsonADDomainExtension"
-  type_handler_version = "1.3"
-  depends_on = [time_sleep.wait-4-mins]
-  # NOTE: the `OUPath` field is intentionally blank, to put it in the Computers OU
-  settings = <<SETTINGS
-    {
-        "Name": "${var.active_directory_domain}",
-        "OUPath": "",
-        "User": "${var.active_directory_domain}\\${azurerm_windows_virtual_machine.attack-range-ad-1.admin_username}",
-        "Restart": "true",
-        "Options": "3"
-    }
-SETTINGS
-
-  protected_settings = <<SETTINGS
-    {
-        "Password": "${azurerm_windows_virtual_machine.attack-range-ad-1.admin_password}"
-    }
-SETTINGS
+module "join-domain-2" {
+  source = "./modules/extras/join-domain"
+  name = "join-domain-2k16"
+  active_directory_domain = var.active_directory_domain
+  machine-id = module.win2k16-1.id
+  admin_username = var.admin_user
+  admin_password = var.admin_password
+  depends_on = [module.win2k16-1.id]
 }
 
-resource "azurerm_virtual_machine_extension" "install-elastic-agent-2k16v1" {
-  name                 = "install-elastic-agent-2k16v1"
-  virtual_machine_id   = azurerm_windows_virtual_machine.attack-range-win2k16-1.id
-  publisher            = "Microsoft.Compute"
-  type                 = "CustomScriptExtension"
-  type_handler_version = "1.9"
-  depends_on = [time_sleep.wait-4-mins]
-  settings = <<SETTINGS
-    {
-        "commandToExecute": "powershell -command \"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${base64encode(data.template_file.tf.rendered)}')) | Out-File -filepath %PUBLIC%\\install.ps1\" && powershell -ExecutionPolicy Unrestricted -File %PUBLIC%\\install.ps1"
-    }
-SETTINGS
-}
-
-data "template_file" "tf" {
-  template = file("elastic-agent.ps1")
-  vars = {
-    kibana-url  = var.kibana_url
-    token       = var.fleet_token
-  }
+module "elastic-agent-2" {
+  source = "./modules/extras/install-agent"
+  name = "install-agent-2"
+  machine_id = module.win2k16-1.id
+  kibana_url = var.kibana_url
+  fleet_token = var.fleet_token
 }
 
