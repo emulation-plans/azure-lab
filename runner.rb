@@ -57,13 +57,23 @@ end
 
 def terraform(mode)
   if mode == "Plan"
+    init = RubyTerraform::Commands::Init.new
+    init.execute(
+      chdir: 'terraform',
+      out: 'attack-range.tfplan'
+    )
     plan = RubyTerraform::Commands::Plan.new
     plan.execute(
        chdir: 'terraform',
-      out: 'attack-range.tfplan'
+       out: 'attack-range.tfplan'
     )
     exit
   elsif mode == "Plan and Run"
+    init = RubyTerraform::Commands::Init.new
+    init.execute(
+      chdir: 'terraform',
+      out: 'attack-range.tfplan'
+    )
     plan = RubyTerraform::Commands::Plan.new
     plan.execute(
       chdir: 'terraform',
