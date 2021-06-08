@@ -51,7 +51,7 @@ module "kali-internal-networking" {
   location            = module.resource-group.location
   resource_group_name = module.resource-group.resource_group_name
   subnet_id           = module.subnet-2.id
-  private_ip_address  = "10.0.2.69"
+  private_ip_address  = "10.0.3.69"
 }
 
 module "active-directory-interface-1" {
