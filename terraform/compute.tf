@@ -1,72 +1,21 @@
-resource "azurerm_bastion_host" "attack-range-bastion-host" {
-  name                = "AzureBastionHost"
-  location            = azurerm_resource_group.attack-range-rg.location
-  resource_group_name = azurerm_resource_group.attack-range-rg.name
-
-  ip_configuration {
-    name                 = "configuration"
-    subnet_id            = azurerm_subnet.attack-range-bastion-subnet.id
-    public_ip_address_id = azurerm_public_ip.attack-range-bastion-ip.id
-  }
-}
-
-resource "azurerm_marketplace_agreement" "kali-linux" {
-  publisher = "kali-linux"
-  offer     = "kali-linux"
-  plan      = "kali"
-}
-
-resource "azurerm_virtual_machine" "kali" {
-  name                             = "kali"
-  resource_group_name              = azurerm_resource_group.attack-range-rg.name
-  location                         = azurerm_resource_group.attack-range-rg.location
-  network_interface_ids            = [azurerm_network_interface.attack-range-network-interface-external-kali-1.id, azurerm_network_interface.attack-range-network-interface-internal-kali-1.id]
-  vm_size                          = "Standard_D1_v2"
-  primary_network_interface_id     = azurerm_network_interface.attack-range-network-interface-external-kali-1.id
-  delete_os_disk_on_termination    = true
-  delete_data_disks_on_termination = true
-  depends_on = [azurerm_marketplace_agreement.kali-linux]
-  storage_image_reference {
-    publisher = "kali-linux"
-    offer     = "kali-linux"
-    sku       = "kali"
-    version   = "latest"
-  }
-
-  storage_os_disk {
-    name          = "kalidisk"
-    caching       = "ReadWrite"
-    create_option = "FromImage"
-  }
-
-  os_profile {
-    computer_name  = "kali"
-    admin_username = "kalissh"
-    admin_password = var.kali_password
-  }
-
-  os_profile_linux_config {
-    disable_password_authentication = false
-  }
-
-  # Mandatory section for Marketplace VMs
-  plan {
-    name      = "kali"
-    publisher = "kali-linux"
-    product   = "kali-linux"
-  }
+module "bastion" {
+  source = "./modules/compute/bastion"
+  location = module.resource-group.location
+  resource_group_name = module.resource-group.resource_group_name
+  subnet = module.bastion-networking.subnet
+  public_ip_address_id = module.bastion-networking.public_ip
 }
 
 resource "azurerm_windows_virtual_machine" "attack-range-ad-1" {
   name                = "ad-1.${var.active_directory_domain}"
   computer_name       = "ad-1"
-  resource_group_name = azurerm_resource_group.attack-range-rg.name
-  location            = azurerm_resource_group.attack-range-rg.location
+  resource_group_name = module.resource-group.resource_group_name
+  location            = module.resource-group.location
   size                = "Standard_F2"
   admin_username      = var.admin_user
   admin_password      = var.admin_password
   network_interface_ids = [
-    azurerm_network_interface.attack-range-network-interface-ad-1.id,
+    module.active-directory-interface-1.network-interface-id
   ]
 
   os_disk {
@@ -116,14 +65,14 @@ resource "time_sleep" "wait-4-mins" {
 resource "azurerm_windows_virtual_machine" "attack-range-win10-1" {
   name                = "win10-1.${var.active_directory_domain}"
   computer_name       = "win10-1"
-  resource_group_name = azurerm_resource_group.attack-range-rg.name
-  location            = azurerm_resource_group.attack-range-rg.location
+  resource_group_name = module.resource-group.resource_group_name
+  location            = module.resource-group.location
   size                = "Standard_F2"
   admin_username      = var.admin_user
   admin_password      = var.admin_password
   depends_on = [time_sleep.wait-4-mins]
   network_interface_ids = [
-    azurerm_network_interface.attack-range-network-interface-win10-1.id,
+    module.windows-10-network-interface-1.network-interface-id
   ]
 
   os_disk {
@@ -181,14 +130,14 @@ SETTINGS
 resource "azurerm_windows_virtual_machine" "attack-range-win2k16-1" {
   name                = "win2k16-1.${var.active_directory_domain}"
   computer_name       = "win2k16-1"
-  resource_group_name = azurerm_resource_group.attack-range-rg.name
-  location            = azurerm_resource_group.attack-range-rg.location
+  resource_group_name = module.resource-group.resource_group_name
+  location            = module.resource-group.location
   size                = "Standard_F2"
   admin_username      = var.admin_user
   admin_password      = var.admin_password
   depends_on = [time_sleep.wait-4-mins]
   network_interface_ids = [
-    azurerm_network_interface.attack-range-network-interface-win2k16-1.id,
+    module.windows-server-2k16-network-interface-1.network-interface-id,
   ]
 
   os_disk {
