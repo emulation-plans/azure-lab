@@ -17,6 +17,9 @@ The scripts here will deploy the following.
 - A Kali Linux machine
 - An Azure Bastion host 
 
+The overall architecture looks like the following: 
+
+![Architectural Representation of the Azure Lab](./screenshots/azure-lab-overview.png)
 ## Assumptions
 - You have an Azure Subscription
 - You have configured Terraform to work with said Azure Subscription
@@ -39,19 +42,24 @@ What do you want to call your admin user? admin-user
 What do you want the admin password to be? •••••••••••••••••••••
 What name do you want to use for your domain? attackrange.com
 What do you want to use for the netbios domain name? attackrange
+What Kibana URL do you want to use? https://dd655d45ebbc4ac7993ba79c65be59d3.fleet.eastus2.azure.elastic-cloud.com:443
 What enrollment token do you wish to set for Elastic Agent to authenticate with? ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 What do you want to do next? Plan and Run
 Are you sure you want to continue on? Changes you make to the Terraform state are usually permanent. Yes
-```
+``` 
+Once deployed - take a look at Kibana and you will see logs starting to come in
+
+![Kibana Discover View showing logs from Agent](./screenshots/elastic-discover.png)
+
 
 ## TODO
 
 There are a few outstanding things that need work. 
 
-- The first is making the environment a little more vulnernable by design. Tools like VulnAd will help here. 
+- The first is making the environment a little more vulnerable by design. Tools like [VulnAd](https://github.com/WazeHell/vulnerable-AD) will help here. 
 - Add a way of doing a quick delete first off.
 - Logging (The RubyTerraform Library supports this)  
-- Deploy Caldera as part of this  
+- Deploy Caldera or a C2 Server (Covenant maybe)
 
 ## Thanks 
 Thanks to all the homies contributing to infosec. 
