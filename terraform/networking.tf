@@ -54,6 +54,16 @@ module "kali-internal-networking" {
   private_ip_address  = "10.0.3.69"
 }
 
+module "covenant-network-interface-1" {
+  source              = "./modules/networking/network-interfaces/internal"
+  name                = "covenant-nic-1"
+  location            = module.resource-group.location
+  resource_group_name = module.resource-group.resource_group_name
+  dns_servers         = [module.active-directory-interface-1.private_ip_address]
+  subnet_id           = module.subnet-2.id
+  private_ip_address  = "10.0.3.79"
+}
+
 module "active-directory-interface-1" {
   source              = "./modules/networking/network-interfaces/internal"
   name                = "active-directory-nic"

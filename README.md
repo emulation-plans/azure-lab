@@ -16,6 +16,7 @@ The scripts here will deploy the following.
   - Install Elastic Agent 
 - A Kali Linux machine
 - An Azure Bastion host 
+- A Linux Host running Covenant C2 Server
 
 The overall architecture looks like the following: 
 
@@ -23,6 +24,7 @@ The overall architecture looks like the following:
 ## Assumptions
 - You have an Azure Subscription
 - You have configured Terraform to work with said Azure Subscription
+- To make things easier it would be good to have an elastic cloud cluster, you can get a free trial [here](https://www.elastic.co/cloud/elasticsearch-service/signup).
 
 
 ## Getting Started 
@@ -51,15 +53,16 @@ Once deployed - take a look at Kibana and you will see logs starting to come in
 
 ![Kibana Discover View showing logs from Agent](./screenshots/elastic-discover.png)
 
+You will need to start covenant on the C2 Server. Just use the bastion host, and run `cd /Covenant/Covenant && dotnet run` once this has been done, Covenant will start and be accessible.
 
+![Screenshot showing the Covenant login page](./screenshots/covenant-installed.png)
 ## TODO
 
 There are a few outstanding things that need work. 
 
 - The first is making the environment a little more vulnerable by design. Tools like [VulnAd](https://github.com/WazeHell/vulnerable-AD) will help here. 
 - Add a way of doing a quick delete first off.
-- Logging (The RubyTerraform Library supports this)  
-- Deploy Caldera or a C2 Server (Covenant maybe)
+- Logging (The RubyTerraform Library supports this)
 
 ## Thanks 
 Thanks to all the homies contributing to infosec. 
