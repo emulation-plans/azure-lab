@@ -29,14 +29,19 @@ To get started, clone this repo. `cd` into it, and then run `ruby runner.rb` fol
 - The script invokes terraform and will start provisioning your environnment. 
 
 ```
+ ▄▄▄· ·▄▄▄▄•▄• ▄▌▄▄▄  ▄▄▄ .    ▄▄▌   ▄▄▄· ▄▄▄▄·
+▐█ ▀█ ▪▀·.█▌█▪██▌▀▄ █·▀▄.▀·    ██•  ▐█ ▀█ ▐█ ▀█▪
+▄█▀▀█ ▄█▀▀▀•█▌▐█▌▐▀▀▄ ▐▀▀▪▄    ██▪  ▄█▀▀█ ▐█▀▀█▄
+▐█ ▪▐▌█▌▪▄█▀▐█▄█▌▐█•█▌▐█▄▄▌    ▐█▌▐▌▐█ ▪▐▌██▄▪▐█
+ ▀  ▀ ·▀▀▀ • ▀▀▀ .▀  ▀ ▀▀▀     .▀▀▀  ▀  ▀ ·▀▀▀▀
+Welcome to Azure Lab - please follow the prompts to get started. Happy hunting.
 What do you want to call your admin user? admin-user
 What do you want the admin password to be? •••••••••••••••••••••
 What name do you want to use for your domain? attackrange.com
 What do you want to use for the netbios domain name? attackrange
-What password shall do you want to set for the Kali ssh user? •••••••••••••••••••••
-What Kibana URL do you want to use? https://dd655d45ebbc4ac79ba7965be59d3.fleet.eastus2.azure.elastic-cloud.com:443
 What enrollment token do you wish to set for Elastic Agent to authenticate with? ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 What do you want to do next? Plan and Run
+Are you sure you want to continue on? Changes you make to the Terraform state are usually permanent. Yes
 ```
 
 ## TODO
