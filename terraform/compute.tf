@@ -63,6 +63,7 @@ module "elastic-agent-1" {
   machine_id = module.win10-1.id
   kibana_url = var.kibana_url
   fleet_token = var.fleet_token
+  depends_on = [module.join-domain-1]
 }
 
 module "win2k16-1" {
@@ -92,5 +93,6 @@ module "elastic-agent-2" {
   machine_id = module.win2k16-1.id
   kibana_url = var.kibana_url
   fleet_token = var.fleet_token
+  depends_on = [module.join-domain-2]
 }
 

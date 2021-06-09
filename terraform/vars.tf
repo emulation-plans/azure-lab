@@ -1,29 +1,30 @@
 variable "admin_user" {
-  default = "adminuser"
+  default = "admin-user"
 }
 variable "admin_password" {
-  default = "P@ssw0rd!"
+  default = "G3ner1cPa$sword!"
   description = "AD Password"
 }
 
 variable "active_directory_domain" {
-  default = "elasticdemo.com"
+  default = "attackrange.com"
 }
 
 variable "active_directory_netbios_name" {
-  default = "elasticdemo"
+  default = "attackrange"
 }
 
 variable "kali_password" {
-  default = "P@ssw0rd!"
+  default = "G3ner1cPa$sword!"
   description = "Kali SSH Password"
 }
 
 variable "kibana_url" {
-  default = ""
-  description = "Your kibana endpoint URL goes here"
+  default = "https://dd655d45ebbc4ac7993ba79c65be59d3.fleet.eastus2.azure.elastic-cloud.com:443"
+  description = "Your fleet server URL goes here"
 }
 
 variable "fleet_token" {
-  default = "Grab your enrollment token from Fleet in Kibana and set it"
+  default = "emNEaTAza0JVZ1BWeHVEZ0k3VGk6T3VuRDIyZzFTcUdSX2p0WF9vWTFSQQ=="
+  description = "The enrollment token goes here"
 }
