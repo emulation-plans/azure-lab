@@ -59,7 +59,15 @@ def prompts
     options.choice "Destroy"
     options.choice "Do Nothing"
   end
-  terraform(mode)
+  confirm = prompt.select("Are you sure you want to continue on? Changes you make to the Terraform state are usually permanent.") do |yesno|
+    yesno.choice "Yes"
+    yesno.choice "No"
+  end
+  if confirm == "Yes"
+    terraform(mode)
+  else
+    exit
+  end
 end
 
 def terraform(mode)

@@ -3,7 +3,7 @@ A simple lab for performing adversary/threat emulation on Azure.
 
 
 ## Introduction
-I built this so I could easily (and relatively cheaply) spin up a windows environment to build CTFs, try new attacks out, and in a past life demo Elastic Security to people. 
+I built this so I could easily (and relatively cheaply) spin up an environment to build CTFs, try new attacks out, and in a past life demo Elastic Security to people. 
 
 The scripts here will deploy the following. 
 
@@ -44,11 +44,9 @@ What do you want to do next? Plan and Run
 There are a few outstanding things that need work. 
 
 - The first is making the environment a little more vulnernable by design. Tools like VulnAd will help here. 
-- Add an extra confirmation before the user starts terraforming their environment. 
-- Add a way of doing a quick delete first off. 
-- Add some default settings. 
-- Logging (The RubyTerraform Library supports this) 
-- Make the Terraform neater, and leverage modules. 
+- Add a way of doing a quick delete first off.
+- Logging (The RubyTerraform Library supports this)  
+- Deploy Caldera as part of this  
 
 ## Thanks 
 Thanks to all the homies contributing to infosec. 
