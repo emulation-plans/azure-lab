@@ -11,7 +11,7 @@ puts "Welcome to Azure Lab - please follow the prompts to get started. Happy hun
 def prompts
   prompt = TTY::Prompt.new
 
-  admin_user = prompt.ask("What do you want to call your admin user?") do |q|
+  admin_user = prompt.ask("What do you want to call your admin user?", default: "admin-user") do |q|
     q.required true
   end
 
@@ -23,13 +23,13 @@ def prompts
 
   ENV['TF_VAR_admin_password'] = admin_password
 
-  active_directory_domain = prompt.ask("What name do you want to use for your domain?") do |q|
+  active_directory_domain = prompt.ask("What name do you want to use for your domain?", default: "attackrange.com") do |q|
     q.required true
   end
 
   ENV['TF_VAR_active_directory_domain'] = active_directory_domain
 
-  active_directory_netbios_name = prompt.ask("What do you want to use for the netbios domain name?") do |q|
+  active_directory_netbios_name = prompt.ask("What do you want to use for the netbios domain name?", default: "attackrange") do |q|
     q.required true
   end
 
@@ -59,6 +59,7 @@ def prompts
     options.choice "Destroy"
     options.choice "Do Nothing"
   end
+  puts "\n"
   confirm = prompt.select("Are you sure you want to continue on? Changes you make to the Terraform state are usually permanent.") do |yesno|
     yesno.choice "Yes"
     yesno.choice "No"

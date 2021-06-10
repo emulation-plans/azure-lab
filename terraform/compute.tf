@@ -75,6 +75,10 @@ module "win2k16-1" {
   admin_password = var.admin_password
   depends_on = [time_sleep.wait-4-mins]
   network_interface_ids = [module.windows-server-2k16-network-interface-1.network-interface-id]
+  image_offer = "WindowsServer"
+  image_publisher = "MicrosoftWindowsServer"
+  image_sku = "2016-Datacenter"
+  image_version = "latest"
 }
 
 module "join-domain-2" {

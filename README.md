@@ -56,6 +56,63 @@ Once deployed - take a look at Kibana and you will see logs starting to come in
 You will need to start covenant on the C2 Server. Just use the bastion host, and run `cd /Covenant/Covenant && dotnet run` once this has been done, Covenant will start and be accessible.
 
 ![Screenshot showing the Covenant login page](./screenshots/covenant-installed.png)
+
+##How do I add more machines?
+
+Simple, head into the `./terraform` directory and look at the `compute.tf` and `networking.tf` files. 
+
+If I wanted to build a new Linux machine I would add another windows machine to the `compute.tf` file
+
+```hcl
+module "win2k16-2" {
+  source = "./modules/compute/windows"
+  name = "win2k16-2"
+  resource_group_name = module.resource-group.resource_group_name
+  location = module.resource-group.location
+  admin_user = var.admin_user
+  admin_password = var.admin_password
+  depends_on = [time_sleep.wait-4-mins]
+  network_interface_ids = [module.windows-server-2k16-network-interface-2.network-interface-id]
+  image_offer = "WindowsServer"
+  image_publisher = "MicrosoftWindowsServer"
+  image_sku = "2016-Datacenter"
+  image_version = "latest"
+}
+
+module "join-domain-3" {
+  source = "./modules/extras/join-domain"
+  name = "join-domain-2k16-2"
+  active_directory_domain = var.active_directory_domain
+  machine-id = module.win2k16-2.id
+  admin_username = var.admin_user
+  admin_password = var.admin_password
+  depends_on = [module.win2k16-2.id]
+}
+
+module "elastic-agent-3" {
+  source = "./modules/extras/install-agent"
+  name = "install-agent-3"
+  machine_id = module.win2k16-2.id
+  kibana_url = var.kibana_url
+  fleet_token = var.fleet_token
+  depends_on = [module.join-domain-3]
+}
+```
+> the time wait is important because it ensures the DC is up and will allow the join domain operation to succeed. 
+
+Then add this to your `networking.tf` file: 
+
+```hcl
+module "windows-server-2k16-network-interface-2" {
+  source              = "./modules/networking/network-interfaces/internal"
+  name                = "win2k16-nic-2"
+  location            = module.resource-group.location
+  resource_group_name = module.resource-group.resource_group_name
+  dns_servers         = [module.active-directory-interface-1.private_ip_address]
+  subnet_id           = module.subnet-1.id
+  private_ip_address  = "10.0.2.13"
+}
+```
 ## TODO
 
 There are a few outstanding things that need work. 
